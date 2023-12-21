@@ -245,7 +245,7 @@ public:
             }
             if (minIndex != -1) {
                 resTape.SetCurr(inputTapes[minIndex].getCurr());
-                std::cout << inputTapes[minIndex].getCurr() << " ";
+                //std::cout << inputTapes[minIndex].getCurr() << " ";
                 resTape.MoveForward();
                 if (inputTapes[minIndex].getCurrPos() == inputTapes[minIndex].getLen() - 1) {
                     tapeAvailable[minIndex] = false;
