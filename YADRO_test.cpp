@@ -200,14 +200,18 @@ public:
     //элементы сортируются в памяти и записываются на временную ленту
     //после чего все отсортированные временные ленты сливаются в конечную
     void tapeSort(MagnetTape& tape, std::string sortedFileName) {
+        //перемотка ленты к началу
         while (tape.getCurrPos() > 0) {
             tape.MoveBack();
         }
+
         std::vector<int> tempData;
         tempData.reserve(M);
         int count = 0;
         int fileCount = 0;
         std::vector<MagnetTape> inputTapes;
+
+        //данные с ленты записываются во внутреннюю память размером M
         while (count < tape.getLen()) {
             for (; tempData.size() < M; tape.MoveForward()) {
                 tempData.push_back(tape.getCurr());
@@ -215,22 +219,30 @@ public:
                 if (count == tape.getLen()) break;
             }
 
+            //Данные сортируются во внутренней памяти
             sort(tempData.begin(), tempData.end());
 
             std::string tmpFileName = "tmp/" + tape.getFileName() + std::to_string(fileCount);
+            //Отсортированные данные записываются на временную ленту
             vectorToTapefile(tempData, tmpFileName);
             inputTapes.push_back(MagnetTape(tmpFileName));
             tempData.clear();
             fileCount++;
         }
+
+        //Лента для записи отсортированных данных
         MagnetTape resTape(sortedFileName, tape.getLen());
 
-
+        //ленты, доступные для слияния
         std::vector<bool> tapeAvailable(fileCount, true);
 
         count = 0;
+
+        //слияние
         while (count < tape.getLen()) {
             int minIndex = -1;
+            //проход по всем доступным временным лентам
+            //поиск ленты с минимальным элементом под магнитной головкой
             for (int i = 0; i < fileCount; i++) {
                 if (tapeAvailable[i]) {
                     if (minIndex == -1) {
@@ -244,6 +256,9 @@ public:
                 }
             }
             if (minIndex != -1) {
+                //минимальный элемент записывается на ленту отсортированных данных
+                //если магнитная головка находилась в конце временной ленты то данная лента уже не учавствует в слиянии
+                //иначе временная лента перематывается вперед
                 resTape.SetCurr(inputTapes[minIndex].getCurr());
                 //std::cout << inputTapes[minIndex].getCurr() << " ";
                 resTape.MoveForward();
@@ -257,6 +272,7 @@ public:
             }
         }
 
+        //"выгрузка" всех временных лент
         for (int i = 0; i < inputTapes.size(); i++) {
             inputTapes[i].Unload();
         }
